@@ -71,11 +71,11 @@ class Dataset(AnnotationsReadMixin):
 				for crop in im_obj.visible_crops(scale):
 					yield crop
 
-		yield im_obj.im
+		yield im_obj.im_array
 
 	def get_example(self, i):
 		im_obj = super(Dataset, self).get_example(i)
-		im = im_obj.im
+		im = im_obj.im_array
 
 		hw = np.array(im.shape[:-1])
 		xy = im_obj.parts[:, 1:3]
