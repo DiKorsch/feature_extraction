@@ -1,19 +1,14 @@
 #!/usr/bin/env bash
-PYTHON=python
+# Script for generic feature extraction
 
-BASE_DIR="/home/korsch/Data"
+MODEL_TYPE=${MODEL_TYPE:-"resnet"}
+SUFFIX=${SUFFIX:-"20parts"}
+WEIGHTS=${WEIGHTS:-"ft_cub200/model.npz"}
+DATASET=${DATASET:-"NAC/2017-bilinear"}
 
-GPU=1
+source config.sh
 
-DATA="${BASE_DIR}/DATASETS/birds/NAC/2017-bilinear"
-MODEL_TYPE="vgg19"
-MODEL="${BASE_DIR}/MODELS/${MODEL_TYPE}/ft_cub200/model.npz"
-
-OUTPUT="-o ../output/train_feats.npz ../output/val_feats.npz"
-
-OPTS="--augment_positions"
-
-$PYTHON ../run.py \
+$PYTHON $SCRIPT \
 	$DATA \
 	$MODEL \
 	$OUTPUT \
