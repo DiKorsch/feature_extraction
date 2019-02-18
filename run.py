@@ -59,16 +59,19 @@ def main(args):
 	train_feats, val_feats = feats[annot.train_split], feats[annot.test_split]
 	train_labs, val_labs = annot.labels[annot.train_split], annot.labels[annot.test_split]
 
-	logging.info("Saving features according to the given split")
-	np.savez_compressed(
+	logging.info("Saving features ({}compressed) according to the given split".format(
+		"" if args.compress_output else "un"))
+	save = np.savez_compressed if args.compress_output else np.savez
+
+	save(
 		args.output[0],
 		features=train_feats,
-		labels=train_labs)
+		labels=train_labs + args.label_shift)
 
-	np.savez_compressed(
+	save(
 		args.output[1],
 		features=val_feats,
-		labels=val_labs)
+		labels=val_labs + args.label_shift)
 
 
 
