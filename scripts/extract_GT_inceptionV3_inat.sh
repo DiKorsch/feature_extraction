@@ -2,10 +2,10 @@
 # Extracts NAC InceptionV3-features pre-trained on iNaturalist and finetuned on cub200
 
 MODEL_TYPE="inception"
-SUFFIX="20parts"
+SUFFIX="16parts_gt"
 WEIGHTS="ft_cub200/sgd.inat_pretrain/g_avg_pooling/model.npz"
-DATASET="NAC/2017-bilinear"
-BATCH_SIZE=24
+DATASET="cub200_11"
+BATCH_SIZE=32
 # N_LOADERS=2
 
 source config.sh
@@ -16,6 +16,6 @@ $PYTHON $SCRIPT \
 	$OUTPUT \
 	-mt $MODEL_TYPE \
 	--gpu $GPU \
-	--part_rescale 227 \
+	--scales 0.31 \
 	$OPTS \
 	$@

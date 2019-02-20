@@ -27,7 +27,10 @@ def extract_args():
 		Arg("--output", "-o", nargs=2, required=True, type=str),
 
 		Arg("--scales", "-s", nargs="+", type=float, default=[0.31, 0.45]),
+		Arg("--n_jobs", "-j", type=int, default=0,
+			help="number of loading processes. If 0, then images are loaded in the same process"),
 		Arg("--label_shift", type=int, default=1),
+		Arg("--part_rescale", type=int, default=-1),
 
 		Arg("--augment_positions", action="store_true"),
 		Arg("--compress_output", action="store_true"),
@@ -36,7 +39,7 @@ def extract_args():
 			help_text="type of the model"),
 
 	])\
-	# .batch_size()\
+	.batch_size()\
 	.debug()\
 	.seed()\
 	)

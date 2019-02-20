@@ -8,6 +8,7 @@ import numpy as np
 
 from core.dataset import Dataset
 from utils.arguments import extract_args, ModelType
+from chainer.iterators import SerialIterator, MultiprocessIterator
 
 from nabirds import CUB_Annotations
 
@@ -43,16 +44,31 @@ def main(args):
 		feats.nbytes / 1024**3,
 		*args.output
 	))
+	if args.n_jobs > 0:
+		it = MultiprocessIterator(data,
+			n_processes=args.n_jobs,
+			n_prefetch=32,
+			batch_size=args.batch_size,
+			repeat=False, shuffle=False)
+	else:
+		it = SerialIterator(data,
+			batch_size=args.batch_size,
+			repeat=False, shuffle=False)
+	logging.info("Using {it.__class__.__name__} with batch size {it.batch_size}".format(it=it))
+	for batch_i, batch in enumerate(it):
 
+		var = model.xp.array(batch)
+		in_shape = var.shape[-3:]
 
-	for i, crops in enumerate(data):
-		var = model.xp.array(crops)
+		var = var.reshape((-1, ) + in_shape)
+		batch_feats = model(var, model.meta.feature_layer)
+		batch_feats.to_cpu()
+		batch_feats = batch_feats.array.reshape((len(batch), -1, model.meta.feature_size))
 
-		feat = model(var, model.meta.feature_layer)
-		feat.to_cpu()
-		feats[i] = feat.array
-
-		print("{} / {} ready".format(i+1, len(data)), end="\r")
+		i = batch_i * it.batch_size
+		feats[i : i + len(batch)] = batch_feats
+		samples_ready = min(len(data), (batch_i + 1) * it.batch_size)
+		print("{} / {} ready".format(samples_ready, len(data)), end="\r")
 
 	print()
 

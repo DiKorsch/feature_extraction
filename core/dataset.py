@@ -31,14 +31,14 @@ def augmented_positions(im_obj, scale):
 
 class Dataset(AnnotationsReadMixin):
 
-	def __init__(self, opts, annot, prepare, rescale_size=227, **foo):
+	def __init__(self, opts, annot, prepare, **foo):
 		assert callable(prepare), "prepare must be callable!"
 		super(Dataset, self).__init__(
 			annotations=annot,
-			uuids=annot.uuids
+			uuids=annot.uuids,
+			part_rescale_size=opts.part_rescale
 		)
 
-		self._rescale_size = rescale_size
 		self._crop_scales = opts.scales
 		self._augment_positions = opts.augment_positions
 
@@ -75,13 +75,5 @@ class Dataset(AnnotationsReadMixin):
 
 	def get_example(self, i):
 		im_obj = super(Dataset, self).get_example(i)
-		im = im_obj.im_array
-
-		hw = np.array(im.shape[:-1])
-		xy = im_obj.parts[:, 1:3]
-		xy = xy / self._rescale_size * hw[::-1]
-		im_obj.parts[:, 1:3] = xy
-
 		crops = list(map(self.prepare, self.generate_crops(im_obj)))
-
 		return np.stack(crops)#, im_obj.label
