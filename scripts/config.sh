@@ -9,7 +9,7 @@ GPU=${GPU:-0}
 BATCH_SIZE=${BATCH_SIZE:-64}
 N_LOADERS=${N_LOADERS:-0}
 
-OPTS=""
+OPTS=${OPTS:-""}
 # OPTS="${OPTS} --augment_positions"
 OPTS="${OPTS} --batch_size $BATCH_SIZE"
 OPTS="${OPTS} --n_jobs $N_LOADERS"

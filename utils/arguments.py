@@ -25,6 +25,7 @@ def extract_args():
 		Arg("data"),
 		Arg("weights"),
 		Arg("--output", "-o", nargs=2, required=True, type=str),
+		Arg("--n_classes", type=int, default=201),
 
 		Arg("--scales", "-s", nargs="+", type=float, default=[0.31, 0.45]),
 		Arg("--n_jobs", "-j", type=int, default=0,
@@ -34,6 +35,8 @@ def extract_args():
 
 		Arg("--augment_positions", action="store_true"),
 		Arg("--compress_output", action="store_true"),
+
+		Arg("--is_bbox_parts", action="store_true"),
 
 		ModelType.as_arg("model_type", "mt",
 			help_text="type of the model"),

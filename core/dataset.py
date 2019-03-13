@@ -1,4 +1,3 @@
-from nabirds.dataset import Dataset as BaseDataset
 from nabirds.dataset import AnnotationsReadMixin
 import numpy as np
 
@@ -42,6 +41,9 @@ class Dataset(AnnotationsReadMixin):
 		self._crop_scales = opts.scales
 		self._augment_positions = opts.augment_positions
 
+		if opts.augment_positions and opts.is_bbox_parts:
+			raise ValueError("Either position augmentation or bbox parts should be enabled!")
+
 		self.prepare = prepare
 
 	@property
@@ -68,8 +70,12 @@ class Dataset(AnnotationsReadMixin):
 					for crop in aug_im_obj.visible_crops(scale):
 						yield crop
 			else:
-				for crop in im_obj.visible_crops(scale):
-					yield crop
+				if scale > 0:
+					for crop in im_obj.visible_crops(scale):
+						yield crop
+				else:
+					for i, x,y,w,h in im_obj.parts:
+						yield im_obj.im_array[y:y+h, x:x+w]
 
 		yield im_obj.im_array
 
