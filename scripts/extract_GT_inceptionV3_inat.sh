@@ -8,6 +8,7 @@ DATASET="cub200_11"
 BATCH_SIZE=32
 # N_LOADERS=2
 
+OPTS="--prepare_type custom"
 source config.sh
 
 $PYTHON $SCRIPT \

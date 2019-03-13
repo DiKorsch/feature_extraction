@@ -8,6 +8,7 @@ DATASET="NAC/2017-bilinear"
 BATCH_SIZE=24
 # N_LOADERS=2
 
+OPTS="--prepare_type custom"
 source config.sh
 
 $PYTHON $SCRIPT \

@@ -1,24 +1,7 @@
 from cvargparse import ArgFactory, Arg, GPUParser
-from cvargparse.utils.enumerations import BaseChoiceType
 
-from chainer_addons.models import ResnetLayers, VGG19Layers, InceptionV3
-
-
-class ModelType(BaseChoiceType):
-	ResNet = ResnetLayers
-	VGG19 = VGG19Layers
-	Inception = InceptionV3
-	Default = ResnetLayers
-
-	@classmethod
-	def new(cls, model_type, *args, **kwargs):
-		model_type = cls.get(model_type)
-		model_cls = model_type.value
-		prepare = model_cls.meta.prepare_func
-
-		model = model_cls(*args, **kwargs)
-
-		return model, prepare
+from core.models import ModelType
+from utils.preprocessing import PrepareType
 
 def extract_args():
 	parser = GPUParser(ArgFactory([
@@ -40,6 +23,9 @@ def extract_args():
 
 		ModelType.as_arg("model_type", "mt",
 			help_text="type of the model"),
+
+		PrepareType.as_arg("prepare_type",
+			help_text="type of image preprocessing"),
 
 	])\
 	.batch_size()\

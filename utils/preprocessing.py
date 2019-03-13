@@ -1,5 +1,14 @@
+from cvargparse.utils.enumerations import BaseChoiceType
 
-def prepare(im, size, crop_fraction=0.875):
+class PrepareType(BaseChoiceType):
+	MODEL = 0
+	CUSTOM = 1
+	TF = 2
+
+	Default = MODEL
+
+
+def custom_prepare(im, size, crop_fraction=0.875):
 	crop_size = None
 	h, w, c = im.shape
 
@@ -34,6 +43,7 @@ def prepare_tf(size, crop_fraction=0.875, from_path=False):
 		image = im_input = tf.placeholder(tf.float32, shape=(None, None, 3))
 
 
+	raise NotImplementedError("REFACTOR ME!")
 	image = tf.image.central_crop(image, central_fraction=crop_fraction)
 	image = tf.expand_dims(image, 0)
 	image = tf.image.resize_bilinear(image, [size, size], align_corners=False)

@@ -17,7 +17,7 @@ else
 fi
 
 BATCH_SIZE=32
-OPTS="--is_bbox_parts"
+OPTS="--is_bbox_parts --prepare_type custom"
 
 source config.sh
 
