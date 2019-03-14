@@ -1,19 +1,20 @@
 #!/usr/bin/env python
 if __name__ != '__main__': raise Exception("Do not import me!")
 
+import logging
+import numpy as np
+import matplotlib.pyplot as plt
+
 import chainer
 import tensorflow as tf
 
-import logging
-import numpy as np
-
-from core.dataset import Dataset
-from utils.arguments import extract_args, ModelType
-from nabirds import CUB_Annotations
-
-import matplotlib.pyplot as plt
 from functools import partial
 from tqdm import tqdm
+
+from feature_extract.core.dataset import Dataset
+from feature_extract.utils.arguments import extract_args, ModelType
+
+from nabirds import CUB_Annotations
 
 def main(args):
 	if args.debug:

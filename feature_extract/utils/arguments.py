@@ -1,7 +1,7 @@
 from cvargparse import ArgFactory, Arg, GPUParser
 
-from core.models import ModelType
-from utils.preprocessing import PrepareType
+from feature_extract.core.models import ModelType
+from feature_extract.utils.preprocessing import PrepareType
 
 def extract_args():
 	parser = GPUParser(ArgFactory([

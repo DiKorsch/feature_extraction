@@ -3,12 +3,9 @@ import numpy as np
 from chainer_addons.models import ResnetLayers, VGG19Layers, InceptionV3
 from cvargparse.utils.enumerations import BaseChoiceType
 from functools import partial
-from utils.preprocessing import PrepareType, custom_prepare, prepare_tf
 
-from .tf_inception import InceptionV3 as InceptionV3_TF
-
-# from abc import ABC, abstractmethod
-# class BaseModelWrapper(ABC):
+from feature_extract.utils.preprocessing import PrepareType, custom_prepare, prepare_tf
+from feature_extract.core.models.tf_inception import InceptionV3 as InceptionV3_TF
 
 class ChainerModelWrapper(object):
 
