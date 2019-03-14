@@ -1,4 +1,6 @@
 from cvargparse.utils.enumerations import BaseChoiceType
+from chainercv.transforms import center_crop, resize
+import numpy as np
 
 class PrepareType(BaseChoiceType):
 	MODEL = 0

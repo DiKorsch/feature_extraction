@@ -18,5 +18,7 @@ OPTS="${OPTS} --n_jobs $N_LOADERS"
 DATA="${BASE_DIR}/DATASETS/birds/${DATASET}"
 MODEL="${BASE_DIR}/MODELS/${MODEL_TYPE}/${WEIGHTS}"
 
-OUTPUT="-o ../output/train_${SUFFIX}.${MODEL_TYPE}.npz ../output/val_${SUFFIX}.${MODEL_TYPE}.npz"
+FEATURES="../output/train_${SUFFIX}.${MODEL_TYPE}.npz ../output/val_${SUFFIX}.${MODEL_TYPE}.npz"
+OUTPUT="-o ${FEATURES}"
 
+CP="rsync -auh --info=progress2"

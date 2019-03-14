@@ -9,7 +9,6 @@ import numpy as np
 
 from core.dataset import Dataset
 from utils.arguments import extract_args, ModelType
-from chainercv.transforms import center_crop, resize
 from nabirds import CUB_Annotations
 
 import matplotlib.pyplot as plt
@@ -40,15 +39,10 @@ def main(args):
 	))
 
 	for batch_i, batch in tqdm(enumerate(it), total=n_batches):
-		X = np.array(batch)
-		n, n_parts, c, h, w = X.shape
-		X = X.reshape((-1, c, h, w))
-		batch_feats = model_wrapper.extract_features(model, X)
-		batch_feats = batch_feats.reshape((n, -1, model.meta.feature_size))
-
+		batch_feats = model_wrapper.extract_features(model, batch)
 		i = batch_i * it.batch_size
+		n = batch_feats.shape[0]
 		feats[i : i + n] = batch_feats
-
 
 	logging.info("Splitting features ...")
 	train_feats, val_feats = feats[annot.train_split], feats[annot.test_split]
