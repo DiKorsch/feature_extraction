@@ -3,7 +3,8 @@
 
 MODEL_TYPE="inception"
 SUFFIX="16parts_gt"
-WEIGHTS="ft_cub200/sgd.inat_pretrain/g_avg_pooling/model.npz"
+# WEIGHTS="ft_cub200/sgd.inat_pretrain/g_avg_pooling/model.npz"
+WEIGHTS="ft_inat/model.ckpt.npz"
 DATASET="cub200_11"
 BATCH_SIZE=32
 # N_LOADERS=2
@@ -20,3 +21,5 @@ $PYTHON $SCRIPT \
 	--scales 0.31 \
 	$OPTS \
 	$@
+
+$CP $FEATURES $DATA/features

@@ -1,6 +1,9 @@
 import numpy as np
 import tensorflow as tf
+import re
+
 from functools import wraps
+
 
 slim = tf.contrib.slim
 trunc_normal = lambda stddev: tf.truncated_normal_initializer(0.0, stddev)
@@ -29,6 +32,7 @@ class InceptionV3(object):
 
 	def __init__(self,
 		inputs,
+		net_name="InceptionV3",
 		min_depth=16,
 		depth_multiplier=1.0,
 		scope=None):
@@ -97,7 +101,9 @@ class InceptionV3(object):
 			"depth_multiplier is not greater than zero."
 		self.depth = lambda d: max(int(d * depth_multiplier), min_depth)
 		self.inputs = inputs
-		with tf.variable_scope(scope, 'InceptionV3', [self.inputs]):
+		self.scope = scope
+
+		with tf.variable_scope(scope, net_name, [self.inputs]):
 			with slim.arg_scope([slim.conv2d, slim.max_pool2d, slim.avg_pool2d], stride=1, padding='VALID'):
 				# input 299 x 299 x 3
 				self.head = net = self.init_head()
@@ -105,31 +111,42 @@ class InceptionV3(object):
 
 			with slim.arg_scope([slim.conv2d, slim.max_pool2d, slim.avg_pool2d], stride=1, padding='SAME'):
 				# input 35 x 35 x 192
-				self.mixed_5b = net = self.block5('Mixed_5b', net, 32)
+				self.mixed_5b_values = values = self.block5('Mixed_5b', net, 32)
+				self.mixed_5b = net = tf.concat(axis=3, values=values)
 				# input 35 x 35 x 256
-				self.mixed_5c = net = self.block5('Mixed_5c', net, 64, is_weird=True)
+				self.mixed_5c_values = values = self.block5('Mixed_5c', net, 64, is_weird=True)
+				self.mixed_5c = net = tf.concat(axis=3, values=values)
 				# input 35 x 35 x 288
-				self.mixed_5d = net = self.block5('Mixed_5d', net, 64)
+				self.mixed_5d_values = values = self.block5('Mixed_5d', net, 64)
+				self.mixed_5d = net = tf.concat(axis=3, values=values)
 
 				# input 35 x 35 x 288
-				self.mixed_6a = net = self.block6a('Mixed_6a', net)
+				self.mixed_6a_values = values = self.block6a('Mixed_6a', net)
+				self.mixed_6a = net = tf.concat(axis=3, values=values)
 				# outuput 17 x 17 x 288
 
 				# input 17 x 17 x 768
-				self.mixed_6b = net = self.block6('Mixed_6b', net, 128)
+				self.mixed_6b_values = values = self.block6('Mixed_6b', net, 128)
+				self.mixed_6b = net = tf.concat(axis=3, values=values)
 				# input 17 x 17 x 768
-				self.mixed_6c = net = self.block6('Mixed_6c', net, 160)
+				self.mixed_6c_values = values = self.block6('Mixed_6c', net, 160)
+				self.mixed_6c = net = tf.concat(axis=3, values=values)
 				# input 17 x 17 x 768
-				self.mixed_6d = net = self.block6('Mixed_6d', net, 160)
+				self.mixed_6d_values = values = self.block6('Mixed_6d', net, 160)
+				self.mixed_6d = net = tf.concat(axis=3, values=values)
 				# input 17 x 17 x 768
-				self.mixed_6e = net = self.block6('Mixed_6e', net, 192)
+				self.mixed_6e_values = values = self.block6('Mixed_6e', net, 192)
+				self.mixed_6e = net = tf.concat(axis=3, values=values)
 
 				# input 8 x 8 x 1280
-				self.mixed_7a = net = self.block7a('Mixed_7a', net)
+				self.mixed_7a_values = values = self.block7a('Mixed_7a', net)
+				self.mixed_7a = net = tf.concat(axis=3, values=values)
 				# input 8 x 8 x 2048
-				self.mixed_7b = net = self.block7('Mixed_7b', net, "b")
+				self.mixed_7b_values = values = self.block7('Mixed_7b', net, "b")
+				self.mixed_7b = net = tf.concat(axis=3, values=values)
 				# input 8 x 8 x 2048
-				self.mixed_7c = net = self.block7('Mixed_7c', net, "c")
+				self.mixed_7c_values = values = self.block7('Mixed_7c', net, "c")
+				self.mixed_7c = net = tf.concat(axis=3, values=values)
 
 			self.feature = tf.reduce_mean(self.mixed_7c, [1, 2])
 
@@ -137,22 +154,34 @@ class InceptionV3(object):
 		config_sess = tf.ConfigProto(allow_soft_placement=True)
 		config_sess.gpu_options.allow_growth = True
 		self.sess = tf.Session(config=config_sess)
+		name_regex = re.compile(r"^{net_name}/(.*?):0$".format(net_name=net_name))
+
+		self.params = {
+			name_regex.search(p.name).group(1): p
+				for p in slim.get_model_variables()}
 
 	def init_head(self):
 		# 299 x 299 x 3
 		net = slim.conv2d(self.inputs,			self.depth(32), 	[3, 3], 	scope='Conv2d_1a_3x3', stride=2)
+		self.head_conv0 = net
 		# 149 x 149 x 32
 		net = slim.conv2d(net,					self.depth(32), 	[3, 3], 	scope='Conv2d_2a_3x3')
+		self.head_conv1 = net
 		# 147 x 147 x 32
 		net = slim.conv2d(net,					self.depth(64), 	[3, 3], 	scope='Conv2d_2b_3x3', padding='SAME')
+		self.head_conv2 = net
 		# 147 x 147 x 64
 		net = slim.max_pool2d(net, 									[3, 3], 	scope='MaxPool_3a_3x3', stride=2)
+		self.head_pool2 = net
 		# 73 x 73 x 64
 		net = slim.conv2d(net,					self.depth(80), 	[1, 1], 	scope='Conv2d_3b_1x1')
+		self.head_conv3 = net
 		# 73 x 73 x 80.
 		net = slim.conv2d(net,					self.depth(192), 	[3, 3], 	scope='Conv2d_4a_3x3')
+		self.head_conv4 = net
 		# 71 x 71 x 192.
 		net = slim.max_pool2d(net, 									[3, 3], 	scope='MaxPool_5a_3x3', stride=2)
+		self.head_pool4 = net
 		# 35 x 35 x 192.
 		return net
 
@@ -179,8 +208,8 @@ class InceptionV3(object):
 		with tf.variable_scope('Branch_3'):
 			branch_3 = slim.avg_pool2d(net, 						[3, 3], 	scope='AvgPool_0a_3x3')
 			branch_3 = slim.conv2d(branch_3, 	self.depth(d), 		[1, 1], 	scope='Conv2d_0b_1x1')
+		return [branch_0, branch_1, branch_2, branch_3]
 
-		return tf.concat(axis=3, values=[branch_0, branch_1, branch_2, branch_3])
 
 
 	@variable_scope_decorator
@@ -197,7 +226,7 @@ class InceptionV3(object):
 		with tf.variable_scope('Branch_2'):
 			branch_2 = slim.max_pool2d(net, 						[3, 3], 	scope='MaxPool_1a_3x3', stride=2, padding='VALID')
 
-		return tf.concat(axis=3, values=[branch_0, branch_1, branch_2])
+		return [branch_0, branch_1, branch_2]
 
 
 	@variable_scope_decorator
@@ -222,7 +251,7 @@ class InceptionV3(object):
 			branch_3 = slim.avg_pool2d(net, 						[3, 3], 	scope='AvgPool_0a_3x3')
 			branch_3 = slim.conv2d(branch_3, 	self.depth(192), 	[1, 1], 	scope='Conv2d_0b_1x1')
 
-		return tf.concat(axis=3, values=[branch_0, branch_1, branch_2, branch_3])
+		return [branch_0, branch_1, branch_2, branch_3]
 
 
 	@variable_scope_decorator
@@ -241,7 +270,7 @@ class InceptionV3(object):
 		with tf.variable_scope('Branch_2'):
 			branch_2 = slim.max_pool2d(net, 						[3, 3], 	scope='MaxPool_1a_3x3', stride=2, padding='VALID')
 
-		return tf.concat(axis=3, values=[branch_0, branch_1, branch_2])
+		return [branch_0, branch_1, branch_2]
 
 
 	@variable_scope_decorator
@@ -269,12 +298,12 @@ class InceptionV3(object):
 			branch_3 = slim.avg_pool2d(net, 						[3, 3], 	scope='AvgPool_0a_3x3')
 			branch_3 = slim.conv2d(branch_3, 	self.depth(192), 	[1, 1], 	scope='Conv2d_0b_1x1')
 
-		return tf.concat(axis=3, values=[branch_0, branch_1, branch_2, branch_3])
+		return [branch_0, branch_1, branch_2, branch_3]
 
 	@classmethod
-	def new(cls, checkpoints_path, train=False, arg_scope=None, *args, **kwargs):
-
-		with tf.Graph().as_default():
+	def new(cls, checkpoints_path, train=False, arg_scope=None, graph=None, *args, **kwargs):
+		graph = graph or tf.Graph()
+		with graph.as_default():
 			arg_scope = arg_scope or inception_arg_scope()
 
 			inputs = tf.placeholder(tf.float32, [None, None, None, 3])

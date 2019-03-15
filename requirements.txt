@@ -1,4 +1,4 @@
 cvargparse>=0.1.5
 nabirds>=0.1.6
 chainer>=4.2.0,<5
-chainer_addons>=0.2.0
+chainer_addons~=0.5.0

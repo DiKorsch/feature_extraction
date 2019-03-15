@@ -3,7 +3,7 @@ conda activate chainer4
 
 PYTHON=python
 SCRIPT="../run.py"
-BASE_DIR="/home/korsch/Data"
+export BASE_DIR="/home/korsch/Data"
 
 GPU=${GPU:-0}
 BATCH_SIZE=${BATCH_SIZE:-64}

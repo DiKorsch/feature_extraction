@@ -3,7 +3,8 @@
 
 MODEL_TYPE="inception"
 SUFFIX="20parts"
-WEIGHTS="ft_cub200/sgd.inat_pretrain/g_avg_pooling/model.npz"
+# WEIGHTS="ft_cub200/sgd.inat_pretrain/g_avg_pooling/model.npz"
+WEIGHTS="ft_inat/model.ckpt.npz"
 DATASET="NAC/2017-bilinear"
 BATCH_SIZE=24
 # N_LOADERS=2
@@ -20,3 +21,6 @@ $PYTHON $SCRIPT \
 	--part_rescale 227 \
 	$OPTS \
 	$@
+
+# echo "Copying \"${FEATURES}\" to \"$DATA/features\""
+$CP $FEATURES $DATA/features

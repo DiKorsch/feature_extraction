@@ -4,7 +4,8 @@
 FULL=${FULL:-0}
 
 MODEL_TYPE="inception"
-WEIGHTS="ft_cub200/sgd.inat_pretrain/g_avg_pooling/model.npz"
+# WEIGHTS="ft_cub200/sgd.inat_pretrain/g_avg_pooling/model.npz"
+WEIGHTS="ft_inat/model.ckpt.npz"
 SUFFIX="5parts_L1"
 DATASET="cub200_11_L1"
 
@@ -31,3 +32,5 @@ $PYTHON $SCRIPT \
 	--scales -1 \
 	$OPTS \
 	$@
+
+$CP $FEATURES $DATA/features
