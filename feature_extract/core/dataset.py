@@ -33,13 +33,9 @@ def augmented_positions(im_obj, scale):
 
 class Dataset(AnnotationsReadMixin):
 
-	def __init__(self, opts, annot, prepare, **foo):
+	def __init__(self, opts, prepare, **foo):
 		assert callable(prepare), "prepare must be callable!"
-		super(Dataset, self).__init__(
-			annotations=annot,
-			uuids=annot.uuids,
-			part_rescale_size=opts.part_rescale
-		)
+		super(Dataset, self).__init__(**foo)
 		logging.info("Loaded dataset with {} samples from \"{}\"".format(
 			len(self), opts.data))
 

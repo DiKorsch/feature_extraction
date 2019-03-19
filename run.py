@@ -14,7 +14,7 @@ from tqdm import tqdm
 from feature_extract.core.dataset import Dataset
 from feature_extract.utils.arguments import extract_args, ModelType
 
-from nabirds import CUB_Annotations
+from nabirds.annotations import AnnotationType
 
 def main(args):
 	if args.debug:
@@ -28,8 +28,13 @@ def main(args):
 	model_wrapper = ModelType.get(args.model_type).value
 	model, prepare_func = model_wrapper(opts=args, device=GPU)
 
-	annot = CUB_Annotations(args.data)
-	data = Dataset(args, annot, prepare=prepare_func)
+	annot = AnnotationType.CUB.value(args.data)
+	data = annot.new_dataset(
+		subset=None,
+		dataset_cls=Dataset,
+		opts=args,
+		prepare=prepare_func
+	)
 	it, n_batches = data.new_iterator(args.n_jobs, args.batch_size)
 
 	feats = np.zeros((len(data), data.n_crops, model.meta.feature_size), dtype=np.float32)
