@@ -1,4 +1,5 @@
 import numpy as np
+import logging
 
 from chainer_addons.models import ResnetLayers, VGG19Layers, InceptionV3
 from cvargparse.utils.enumerations import BaseChoiceType
@@ -16,6 +17,7 @@ class ChainerModelWrapper(object):
 
 	def __call__(self, opts, device=-1, **kwargs):
 		model = self.new(**kwargs)
+		logging.info("Loading weights from \"{}\"".format(opts.weights))
 		model.load_for_inference(
 			weights=opts.weights,
 			n_classes=opts.n_classes

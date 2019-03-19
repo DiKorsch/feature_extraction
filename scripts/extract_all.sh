@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
 
-./extract_GT_grouped_inceptionV3_inat.sh
+# resnet inception inception_tf
+export MODEL_TYPE=inception
+export N_LOADERS=2
 
-./extract_GT_inceptionV3_inat.sh
+PARST=NAC BATCH_SIZE=24 ./extract.sh
 
-FULL=0 ./extract_L1_inceptionV3_inat.sh
+PARTS=GT BATCH_SIZE=32 ./extract.sh
 
-FULL=1 ./extract_L1_inceptionV3_inat.sh
+PARTS=GT2 BATCH_SIZE=64 ./extract.sh
 
-./extract_NAC_inceptionV3_inat.sh
+PARTS=L1_pred BATCH_SIZE=64 ./extract.sh
+
+PARTS=L1_full BATCH_SIZE=64 ./extract.sh
+

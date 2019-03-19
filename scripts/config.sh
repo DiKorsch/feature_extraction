@@ -3,10 +3,9 @@ conda activate chainer4
 
 PYTHON=python
 SCRIPT="../run.py"
-export BASE_DIR="/home/korsch/Data"
 
 GPU=${GPU:-0}
-BATCH_SIZE=${BATCH_SIZE:-64}
+BATCH_SIZE=${BATCH_SIZE:-32}
 N_LOADERS=${N_LOADERS:-0}
 
 OPTS=${OPTS:-""}
@@ -14,11 +13,6 @@ OPTS=${OPTS:-""}
 OPTS="${OPTS} --batch_size $BATCH_SIZE"
 OPTS="${OPTS} --n_jobs $N_LOADERS"
 
-
-DATA="${BASE_DIR}/DATASETS/birds/${DATASET}"
-MODEL="${BASE_DIR}/MODELS/${MODEL_TYPE}/${WEIGHTS}"
-
-FEATURES="../output/train_${SUFFIX}.${MODEL_TYPE}.npz ../output/val_${SUFFIX}.${MODEL_TYPE}.npz"
-OUTPUT="-o ${FEATURES}"
+OUTPUT="../output"
 
 CP="rsync -auh --info=progress2"

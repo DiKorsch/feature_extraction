@@ -1,52 +1,26 @@
-from nabirds.dataset import AnnotationsReadMixin
+from nabirds.dataset import AnnotationsReadMixin, PartMixin
 from chainer.iterators import SerialIterator, MultiprocessIterator
 
 import numpy as np
 import logging
 
+from feature_extract.utils.preprocessing import augmented_positions
 
-def augmented_positions(im_obj, scale):
-	im, parts, labels = im_obj.as_tuple()
-	h, w = im.shape[:2]
+class Dataset(PartMixin, AnnotationsReadMixin):
 
-	crop_h, crop_w = h * scale, w * scale
-
-	d_h, d_w = int(crop_h / 4), int(crop_w / 4)
-
-	diff = np.array([
-		[-d_w,-d_h],
-		[ d_w,-d_h],
-		[-d_w, d_h],
-		[ d_w, d_h],
-	])
-
-	for d in diff:
-		aug_im_obj = im_obj.copy()
-
-		xy = aug_im_obj.parts[:, 1:3]
-		xy += d
-		xy = np.maximum(xy, 0)
-		xy = np.minimum(xy, np.array([w, h]) - 1)
-
-		aug_im_obj.parts[:, 1:3] = xy
-		yield aug_im_obj
-
-class Dataset(AnnotationsReadMixin):
-
-	def __init__(self, opts, prepare, **foo):
+	def __init__(self, prepare, augment_positions, **kwargs):
 		assert callable(prepare), "prepare must be callable!"
-		super(Dataset, self).__init__(**foo)
-		logging.info("Loaded dataset with {} samples from \"{}\"".format(
-			len(self), opts.data))
+		super(Dataset, self).__init__(**kwargs)
 
-		self._crop_scales = opts.scales
-		self._augment_positions = opts.augment_positions
+		self._crop_scales = self._annot.dataset_info.scales
+
+		self._augment_positions = augment_positions
 		logging.info("There will be {} crops (on {} scales) from {} parts".format(
 			self.n_crops, self.n_scales, self.n_parts
 		))
 
-		if opts.augment_positions and opts.is_bbox_parts:
-			raise ValueError("Either position augmentation or bbox parts should be enabled!")
+		# if opts.augment_positions and opts.is_bbox_parts:
+		# 	raise ValueError("Either position augmentation or bbox parts should be enabled!")
 
 		self.prepare = prepare
 
@@ -91,12 +65,8 @@ class Dataset(AnnotationsReadMixin):
 					for crop in aug_im_obj.visible_crops(scale):
 						yield crop
 			else:
-				if scale > 0:
-					for crop in im_obj.visible_crops(scale):
-						yield crop
-				else:
-					for i, x,y,w,h in im_obj.parts:
-						yield im_obj.im_array[y:y+h, x:x+w]
+				for crop in im_obj.visible_crops(scale):
+					yield crop
 
 		yield im_obj.im_array
 
