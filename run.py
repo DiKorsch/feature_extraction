@@ -40,7 +40,7 @@ def main(args):
 		data_info.BASE_DIR,
 		data_info.MODEL_DIR,
 		model_info.folder,
-		model_info.weights
+		model_info.ft_weights
 	)
 	model, prepare_func = model_wrapper(opts=args, device=GPU)
 
