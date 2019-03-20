@@ -12,7 +12,7 @@ class Dataset(PartMixin, AnnotationsReadMixin):
 		assert callable(prepare), "prepare must be callable!"
 		super(Dataset, self).__init__(**kwargs)
 
-		self._crop_scales = self._annot.dataset_info.scales
+		self._crop_scales = self._annot.dataset_info.scales or []
 
 		self._augment_positions = augment_positions
 		logging.info("There will be {} crops (on {} scales) from {} parts".format(

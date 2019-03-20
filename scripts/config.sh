@@ -13,6 +13,4 @@ OPTS=${OPTS:-""}
 OPTS="${OPTS} --batch_size $BATCH_SIZE"
 OPTS="${OPTS} --n_jobs $N_LOADERS"
 
-OUTPUT="../output"
-
 CP="rsync -auh --info=progress2"

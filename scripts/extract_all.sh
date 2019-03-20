@@ -4,7 +4,12 @@
 export MODEL_TYPE=inception
 export N_LOADERS=2
 
-PARST=NAC BATCH_SIZE=24 ./extract.sh
+export DATASET=CUB200
+export OUTPUT=../output/$DATASET
+
+PARTS=GLOBAL BATCH_SIZE=128 ./extract.sh
+
+PARTS=NAC BATCH_SIZE=24 ./extract.sh
 
 PARTS=GT BATCH_SIZE=32 ./extract.sh
 

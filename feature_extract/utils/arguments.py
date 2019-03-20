@@ -3,12 +3,20 @@ from cvargparse import ArgFactory, Arg, GPUParser
 from feature_extract.core.models import ModelType
 from feature_extract.utils.preprocessing import PrepareType
 
+from nabirds.utils import read_info_file
+
+DEFAULT_INFO_FILE="/home/korsch/Data/info.yml"
+
+info_file = read_info_file(DEFAULT_INFO_FILE)
+
 def extract_args():
 	parser = GPUParser(ArgFactory([
-		Arg("data"),
-		Arg("parts", default="GT",
-			choices=["GT", "GT2", "NAC", "L1_pred", "L1_full", "UNI"]),
+		Arg("data", default=DEFAULT_INFO_FILE),
+		Arg("dataset", choices=info_file.DATASETS.keys()),
+		Arg("parts", choices=info_file.PARTS.keys()),
+
 		Arg("output", help="output folder for the extracted features"),
+
 		Arg("--n_classes", type=int, default=201),
 
 		Arg("--n_jobs", "-j", type=int, default=0,

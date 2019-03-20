@@ -2,17 +2,36 @@
 # Script for generic feature extraction
 
 # resnet inception inception_tf
-MODEL_TYPE=${MODEL_TYPE:-resnet}
+MODEL_TYPE=${MODEL_TYPE:-inception}
+N_LOADERS=${N_LOADERS:-2}
+
 # NAC GT GT2 L1_pred L1_full
-PARTS=${PARTS:-NAC}
+# PARTS=${PARTS:-GT}
 DATA=/home/korsch/Data/info.yml
+
+if [[ -z $DATASET ]]; then
+	echo "DATASET variable is missing!"
+	exit -1
+fi
+
+if [[ -z $PARTS ]]; then
+	echo "PARTS variable is missing!"
+	exit -1
+fi
+
+OUTPUT=${OUTPUT:-"../output/$DATASET"}
+
+if [[ ! -d $OUTPUT ]]; then
+	mkdir -p $OUTPUT
+fi
 
 source config.sh
 
 $PYTHON $SCRIPT \
-	$DATA \
-	$PARTS \
-	$OUTPUT \
+	${DATA} \
+	${DATASET} \
+	${DATASET}_${PARTS} \
+	${OUTPUT} \
 	-mt $MODEL_TYPE \
 	--gpu $GPU \
 	$OPTS \

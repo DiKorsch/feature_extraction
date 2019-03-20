@@ -7,7 +7,7 @@ class PrepareType(BaseChoiceType):
 	CUSTOM = 1
 	TF = 2
 
-	Default = MODEL
+	Default = CUSTOM
 
 def augmented_positions(im_obj, scale):
 	im, parts, labels = im_obj.as_tuple()
