@@ -1,17 +1,22 @@
 import numpy as np
-import tensorflow as tf
 import re
 
 from functools import wraps
 
-
-slim = tf.contrib.slim
-trunc_normal = lambda stddev: tf.truncated_normal_initializer(0.0, stddev)
+has_tf = True
+try:
+	import tensorflow as tf
+	slim = tf.contrib.slim
+	trunc_normal = lambda stddev: tf.truncated_normal_initializer(0.0, stddev)
+except ImportError:
+	has_tf = False
+	pass
 
 def variable_scope_decorator(func):
 
 	@wraps(func)
 	def wrapper(self, var_name, *args, **kwargs):
+		assert has_tf, "Please install Tensorflow!"
 		with tf.variable_scope(var_name):
 			return func(self, *args, **kwargs)
 
@@ -96,6 +101,8 @@ class InceptionV3(object):
 			ValueError: if final_endpoint is not set to one of the predefined values,
 									or depth_multiplier <= 0
 		"""
+		assert has_tf, "Please install Tensorflow!"
+
 		super(InceptionV3, self).__init__()
 		assert depth_multiplier > 0, \
 			"depth_multiplier is not greater than zero."
@@ -326,8 +333,8 @@ def inception_arg_scope(weight_decay=0.00004,
 	use_batch_norm=True,
 	batch_norm_decay=0.9997,
 	batch_norm_epsilon=0.001,
-	activation_fn=tf.nn.relu,
-	batch_norm_updates_collections=tf.GraphKeys.UPDATE_OPS):
+	activation_fn=None,
+	batch_norm_updates_collections=None):
 	"""Defines the default arg scope for inception models.
 
 	Args:
@@ -343,7 +350,9 @@ def inception_arg_scope(weight_decay=0.00004,
 	Returns:
 		An `arg_scope` to use for the inception models.
 	"""
-
+	assert has_tf, "Please install Tensorflow!"
+	activation_fn = activation_fn or tf.nn.relu
+	batch_norm_updates_collections = batch_norm_updates_collections or tf.GraphKeys.UPDATE_OPS
 	if use_batch_norm:
 		normalizer_fn = slim.batch_norm
 		normalizer_params = {
