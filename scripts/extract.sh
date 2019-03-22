@@ -19,6 +19,8 @@ if [[ -z $PARTS ]]; then
 	exit -1
 fi
 
+WEIGHTS=${WEIGHTS:-"rmsprop.g_avg_pooling/model.inat.ckpt/model_final.npz"}
+
 OUTPUT=${OUTPUT:-"../output/$DATASET"}
 
 if [[ ! -d $OUTPUT ]]; then
@@ -32,6 +34,7 @@ $PYTHON $SCRIPT \
 	${DATASET} \
 	${DATASET}_${PARTS} \
 	${OUTPUT} \
+	--weights ${WEIGHTS} \
 	-mt $MODEL_TYPE \
 	--gpu $GPU \
 	$OPTS \

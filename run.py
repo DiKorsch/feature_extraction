@@ -7,12 +7,17 @@ import matplotlib.pyplot as plt
 
 import chainer
 
-from os.path import join
+from os.path import join, isfile
 from functools import partial
 from tqdm import tqdm
 
+from chainer_addons.models import ModelType
+from chainer_addons.models import PrepareType
+from chainer_addons.links.pooling import PoolingType
+
 from feature_extract.core.dataset import Dataset
-from feature_extract.utils.arguments import extract_args, ModelType
+from feature_extract.core.models import ModelWrapper
+from feature_extract.utils.arguments import extract_args
 
 from nabirds.annotations import AnnotationType
 from nabirds.utils import feature_file_name
@@ -29,31 +34,67 @@ def main(args):
 	annot_cls = AnnotationType.get(args.dataset).value
 	annot = annot_cls(args.data, args.parts)
 
-	model_wrapper = ModelType.get(args.model_type).value
-
 	data_info = annot.info
 	model_info = data_info.MODELS[args.model_type]
 	part_info = data_info.PARTS[args.parts]
 
+	# model_wrapper = ModelType.get(args.model_type).value
+	# args.weights = join(
+	# 	data_info.BASE_DIR,
+	# 	data_info.MODEL_DIR,
+	# 	model_info.folder,
+	# 	model_info.ft_weights
+	# )
+	# model, prepare_func = model_wrapper(opts=args, device=GPU)
 
-	args.weights = join(
+	if model_info.class_key == "inception_tf":
+		import pdb; pdb.set_trace()
+		raise ValueError("FIX ME!")
+
+	model = ModelType.new(
+		model_type=model_info.class_key,
+		pooling=args.pooling,
+		aux_logits=False
+	)
+
+	if args.input_size > 0:
+		model.meta.input_size = args.input_size
+
+	prepare = PrepareType[args.prepare_type](model)
+
+	logging.info("Created {} model with \"{}\" prepare function".format(
+		model.__class__.__name__,
+		args.prepare_type
+	))
+
+
+	if args.weights:
+		weights_file = join("ft_{}".format(args.dataset), args.weights)
+	else:
+		weights_file = model_info.weights
+
+
+	weights = join(
 		data_info.BASE_DIR,
 		data_info.MODEL_DIR,
 		model_info.folder,
-		model_info.ft_weights
+		weights_file
 	)
 
-	model, prepare_func = model_wrapper(opts=args, device=GPU)
-	logging.info("Created {} model with \"{}\" prepare function".format(
-		model_wrapper.model_cls.__name__,
-		args.prepare_type
-	))
+	assert isfile(weights), "Could not find weights \"{}\"".format(weights)
+	logging.info("Loading weights from \"{}\"".format(weights))
+
+	wrapped_model = ModelWrapper(model,
+		weights=weights,
+		n_classes=part_info.n_classes + args.label_shift,
+		device=GPU)
+
 
 	data = annot.new_dataset(
 		subset=None,
 		dataset_cls=Dataset,
 
-		prepare=prepare_func,
+		prepare=prepare,
 		augment_positions=args.augment_positions,
 	)
 	n_samples = len(data)
@@ -70,16 +111,28 @@ def main(args):
 		*output
 	))
 
+	preds = np.zeros((n_samples, data.n_crops), dtype=np.int32)
 
 	for batch_i, batch in tqdm(enumerate(it), total=n_batches):
-		batch_feats = model_wrapper.extract_features(model, batch)
+		batch_feats, pred = wrapped_model(batch)
 		i = batch_i * it.batch_size
 		n = batch_feats.shape[0]
 		feats[i : i + n] = batch_feats
+		preds[i : i + n] = pred
 
 	logging.info("Splitting features ...")
-	train_feats, val_feats = feats[annot.train_split], feats[annot.test_split]
-	train_labs, val_labs = annot.labels[annot.train_split], annot.labels[annot.test_split]
+	train_feats, test_feats = feats[annot.train_split], feats[annot.test_split]
+	train_labs, test_labs = annot.labels[annot.train_split], annot.labels[annot.test_split]
+	train_preds = preds[annot.train_split]
+	test_preds = preds[annot.test_split]
+
+	train_acc = (train_preds == (train_labs+args.label_shift)[:, None]).mean(axis=0)
+	test_acc = (test_preds == (test_labs+args.label_shift)[:, None]).mean(axis=0)
+	train_part_accs = ["{:.3%}".format(acc) for acc in train_acc]
+	test_part_accs = ["{:.3%}".format(acc) for acc in test_acc]
+	logging.info("Train Accuracy: {}".format(" | ".join(train_part_accs)))
+	logging.info("Test Accuracy : {}".format(" | ".join(test_part_accs)))
+
 
 	logging.info("Saving features ({}compressed) according to the given split".format(
 		"" if args.compress_output else "un"))
@@ -92,8 +145,8 @@ def main(args):
 
 	save(
 		output[1],
-		features=val_feats,
-		labels=val_labs + args.label_shift)
+		features=test_feats,
+		labels=test_labs + args.label_shift)
 
 
 

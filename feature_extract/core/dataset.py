@@ -73,7 +73,7 @@ class Dataset(PartMixin, AnnotationsReadMixin):
 	def get_example(self, i):
 		im_obj = super(Dataset, self).get_example(i)
 		crops = list(map(self.prepare, self.generate_crops(im_obj)))
-		return np.stack(crops)#, im_obj.label
+		return np.stack(crops) * 2 - 1#, im_obj.label
 
 
 from chainer.dataset import DatasetMixin
