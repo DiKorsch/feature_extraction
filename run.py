@@ -38,27 +38,16 @@ def main(args):
 	model_info = data_info.MODELS[args.model_type]
 	part_info = data_info.PARTS[args.parts]
 
-	# model_wrapper = ModelType.get(args.model_type).value
-	# args.weights = join(
-	# 	data_info.BASE_DIR,
-	# 	data_info.MODEL_DIR,
-	# 	model_info.folder,
-	# 	model_info.ft_weights
-	# )
-	# model, prepare_func = model_wrapper(opts=args, device=GPU)
-
 	if model_info.class_key == "inception_tf":
 		import pdb; pdb.set_trace()
 		raise ValueError("FIX ME!")
 
 	model = ModelType.new(
 		model_type=model_info.class_key,
+		input_size=args.input_size,
 		pooling=args.pooling,
 		aux_logits=False
 	)
-
-	if args.input_size > 0:
-		model.meta.input_size = args.input_size
 
 	prepare = PrepareType[args.prepare_type](model)
 
@@ -72,7 +61,6 @@ def main(args):
 		weights_file = join("ft_{}".format(args.dataset), args.weights)
 	else:
 		weights_file = model_info.weights
-
 
 	weights = join(
 		data_info.BASE_DIR,
@@ -88,7 +76,6 @@ def main(args):
 		weights=weights,
 		n_classes=part_info.n_classes + args.label_shift,
 		device=GPU)
-
 
 	data = annot.new_dataset(
 		subset=None,

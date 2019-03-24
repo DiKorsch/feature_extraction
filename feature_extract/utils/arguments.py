@@ -21,14 +21,14 @@ def extract_args():
 			default="resnet", choices=info_file.MODELS.keys(),
 			help="type of the model"),
 
-		Arg("--weights", type=str,
-			help="network weights used for feature extraction"),
-
-		Arg("--input_size", type=int, default=-1,
-			help="overrides model's default image size if > 0"),
+		Arg("--input_size", type=int, default=0,
+			help="overrides default input size of the model, if greater than 0"),
 
 		PrepareType.as_arg("prepare_type",
 			help_text="type of image preprocessing"),
+
+		Arg("--weights", type=str,
+			help="network weights used for feature extraction"),
 
 		PoolingType.as_arg("pooling",
 			help_text="type of pre-classification pooling"),
