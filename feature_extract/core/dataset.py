@@ -1,12 +1,12 @@
-from nabirds.dataset import AnnotationsReadMixin, PartMixin
-from chainer.iterators import SerialIterator, MultiprocessIterator
+from nabirds.dataset import AnnotationsReadMixin, PartMixin, IteratorMixin
+# from chainer.iterators import SerialIterator, MultiprocessIterator
 
 import numpy as np
 import logging
 
 from feature_extract.utils.preprocessing import augmented_positions
 
-class Dataset(PartMixin, AnnotationsReadMixin):
+class Dataset(PartMixin, AnnotationsReadMixin, IteratorMixin):
 
 	def __init__(self, prepare, augment_positions, **kwargs):
 		assert callable(prepare), "prepare must be callable!"
@@ -23,23 +23,6 @@ class Dataset(PartMixin, AnnotationsReadMixin):
 		# 	raise ValueError("Either position augmentation or bbox parts should be enabled!")
 
 		self.prepare = prepare
-
-	def new_iterator(self, n_jobs, batch_size, n_prefetch=2):
-
-		if n_jobs > 0:
-			it = MultiprocessIterator(self,
-				n_processes=n_jobs,
-				n_prefetch=n_prefetch,
-				batch_size=batch_size,
-				repeat=False, shuffle=False)
-		else:
-			it = SerialIterator(self,
-				batch_size=batch_size,
-				repeat=False, shuffle=False)
-		logging.info("Using {it.__class__.__name__} with batch size {it.batch_size}".format(it=it))
-		n_batches = int(np.ceil(len(self) / it.batch_size))
-		return it, n_batches
-
 
 	@property
 	def n_parts(self):
