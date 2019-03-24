@@ -2,7 +2,7 @@
 
 # resnet inception inception_tf
 export MODEL_TYPE=inception
-export N_LOADERS=2
+export N_JOBS=2
 
 export DATASET=CUB200
 export OUTPUT=../output/$DATASET

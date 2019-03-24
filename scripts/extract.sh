@@ -3,7 +3,7 @@
 
 # resnet inception inception_tf
 MODEL_TYPE=${MODEL_TYPE:-inception}
-N_LOADERS=${N_LOADERS:-2}
+N_JOBS=${N_JOBS:-2}
 
 # NAC GT GT2 L1_pred L1_full
 # PARTS=${PARTS:-GT}
