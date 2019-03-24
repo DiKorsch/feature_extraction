@@ -1,16 +1,21 @@
-from nabirds.dataset import AnnotationsReadMixin, PartMixin, IteratorMixin
-# from chainer.iterators import SerialIterator, MultiprocessIterator
-
+from abc import ABC
 import numpy as np
 import logging
 
+from chainer_addons.dataset import PreprocessMixin
+
+from nabirds.dataset import AnnotationsReadMixin
+from nabirds.dataset import PartMixin
+from nabirds.dataset import IteratorMixin
+
 from feature_extract.utils.preprocessing import augmented_positions
 
-class Dataset(PartMixin, AnnotationsReadMixin, IteratorMixin):
 
-	def __init__(self, prepare, augment_positions, **kwargs):
-		assert callable(prepare), "prepare must be callable!"
-		super(Dataset, self).__init__(**kwargs)
+class _part_crop_mixin(ABC):
+	label_shift = 1
+
+	def __init__(self, augment_positions, **kwargs):
+		super(_part_crop_mixin, self).__init__(**kwargs)
 
 		self._crop_scales = self._annot.dataset_info.scales or []
 
@@ -18,11 +23,6 @@ class Dataset(PartMixin, AnnotationsReadMixin, IteratorMixin):
 		logging.info("There will be {} crops (on {} scales) from {} parts".format(
 			self.n_crops, self.n_scales, self.n_parts
 		))
-
-		# if opts.augment_positions and opts.is_bbox_parts:
-		# 	raise ValueError("Either position augmentation or bbox parts should be enabled!")
-
-		self.prepare = prepare
 
 	@property
 	def n_parts(self):
@@ -40,7 +40,6 @@ class Dataset(PartMixin, AnnotationsReadMixin, IteratorMixin):
 	def n_crops(self):
 		return self.n_parts * self.n_scales * self.n_positions + 1
 
-
 	def generate_crops(self, im_obj):
 		for scale in self._crop_scales:
 			if self._augment_positions:
@@ -53,16 +52,32 @@ class Dataset(PartMixin, AnnotationsReadMixin, IteratorMixin):
 
 		yield im_obj.im_array
 
-	def get_example(self, i):
-		im_obj = super(Dataset, self).get_example(i)
-		crops = list(map(self.prepare, self.generate_crops(im_obj)))
-		return np.stack(crops) * 2 - 1#, im_obj.label
 
+	def get_example(self, i):
+		im_obj = super(_part_crop_mixin, self).get_example(i)
+		crops = list(self.generate_crops(im_obj))
+		return crops, im_obj.label + self.label_shift
+
+class Dataset(
+	# 4. applies preprocessing
+	PreprocessMixin,
+	# 3. transforms ImageWrapper objects to list of part crops
+	_part_crop_mixin,
+	# 2. returns part annotations
+	PartMixin,
+	# 1. reads image
+	AnnotationsReadMixin,
+	IteratorMixin):
+
+	def get_example(self, i):
+		ims, label = super(Dataset, self).get_example(i)
+		return ims * 2 - 1 #, label
 
 from chainer.dataset import DatasetMixin
 class TFDataset(DatasetMixin):
 
 	def __init__(self, opts, annot, prepare, **foo):
+		raise RuntimeError("FIX ME!")
 		super(TFDataset, self).__init__()
 		assert callable(prepare), "prepare must be callable!"
 		self.uuids = annot.uuids

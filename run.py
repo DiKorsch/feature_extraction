@@ -48,13 +48,17 @@ def main(args):
 		pooling=args.pooling,
 		aux_logits=False
 	)
+	size = model.meta.input_size
 
 	prepare = PrepareType[args.prepare_type](model)
 
-	logging.info("Created {} model with \"{}\" prepare function".format(
-		model.__class__.__name__,
-		args.prepare_type
-	))
+	logging.info("Created {} model with \"{}\" prepare function. Image input size: {}"\
+		.format(
+			model.__class__.__name__,
+			args.prepare_type,
+			size
+		)
+	)
 
 
 	if args.weights:
@@ -81,13 +85,17 @@ def main(args):
 		subset=None,
 		dataset_cls=Dataset,
 
-		prepare=prepare,
+		preprocess=prepare,
+		size=size,
 		augment_positions=args.augment_positions,
 	)
 	n_samples = len(data)
-	logging.info("Loaded {} parts dataset with {} samples from \"{}\"".format(
+	logging.info("Loaded \"{}\"-parts dataset with {} samples from \"{}\"".format(
 		args.parts, n_samples, annot.root))
-	it, n_batches = data.new_iterator(args.n_jobs, args.batch_size)
+
+	it, n_batches = data.new_iterator(
+		args.n_jobs, args.batch_size,
+		repeat=False, shuffle=False)
 
 	feats = np.zeros((n_samples, data.n_crops, model.meta.feature_size), dtype=np.float32)
 	output = [join(args.output, "{}{}.{}.npz".format(
