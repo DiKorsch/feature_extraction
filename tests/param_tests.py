@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import chainer
 
-from feature_extract.core.models import InceptionV3
+from chainer_addons.models import InceptionV3
 from feature_extract.core.models.tf_inception import InceptionV3 as InceptionV3_TF, inception_arg_scope
 from .configs import configs
 

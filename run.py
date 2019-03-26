@@ -20,7 +20,6 @@ from feature_extract.core.models import ModelWrapper
 from feature_extract.utils.arguments import extract_args
 
 from nabirds.annotations import AnnotationType
-from nabirds.utils import feature_file_name
 
 def main(args):
 	if args.debug:
