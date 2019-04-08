@@ -56,7 +56,7 @@ class _part_crop_mixin(ABC):
 	def get_example(self, i):
 		im_obj = super(_part_crop_mixin, self).get_example(i)
 		crops = list(self.generate_crops(im_obj))
-		return np.array(crops), im_obj.label + self.label_shift
+		return crops, im_obj.label + self.label_shift
 
 class Dataset(
 	# 4. applies preprocessing

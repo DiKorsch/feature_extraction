@@ -81,7 +81,7 @@ def main(args):
 		device=GPU)
 
 	data = annot.new_dataset(
-		subset=None,
+		subset=args.subset,
 		dataset_cls=Dataset,
 
 		preprocess=prepare,
@@ -114,33 +114,52 @@ def main(args):
 		feats[i : i + n] = batch_feats
 		preds[i : i + n] = pred
 
-	logging.info("Splitting features ...")
-	train_feats, test_feats = feats[annot.train_split], feats[annot.test_split]
-	train_labs, test_labs = annot.labels[annot.train_split], annot.labels[annot.test_split]
-	train_preds = preds[annot.train_split]
-	test_preds = preds[annot.test_split]
-
-	train_acc = (train_preds == (train_labs+args.label_shift)[:, None]).mean(axis=0)
-	test_acc = (test_preds == (test_labs+args.label_shift)[:, None]).mean(axis=0)
-	train_part_accs = ["{:.3%}".format(acc) for acc in train_acc]
-	test_part_accs = ["{:.3%}".format(acc) for acc in test_acc]
-	logging.info("Train Accuracy: {}".format(" | ".join(train_part_accs)))
-	logging.info("Test Accuracy : {}".format(" | ".join(test_part_accs)))
-
-
 	logging.info("Saving features ({}compressed) according to the given split".format(
 		"" if args.compress_output else "un"))
 	save = np.savez_compressed if args.compress_output else np.savez
 
-	save(
-		output[0],
-		features=train_feats,
-		labels=train_labs + args.label_shift)
+	if args.subset is None:
+		logging.info("Splitting features ...")
+		train_feats, test_feats = feats[annot.train_split], feats[annot.test_split]
+		train_labs, test_labs = annot.labels[annot.train_split], annot.labels[annot.test_split]
+		train_preds = preds[annot.train_split]
+		test_preds = preds[annot.test_split]
 
-	save(
-		output[1],
-		features=test_feats,
-		labels=test_labs + args.label_shift)
+		train_acc = (train_preds == (train_labs+args.label_shift)[:, None]).mean(axis=0)
+		test_acc = (test_preds == (test_labs+args.label_shift)[:, None]).mean(axis=0)
+		train_part_accs = ["{:.3%}".format(acc) for acc in train_acc]
+		test_part_accs = ["{:.3%}".format(acc) for acc in test_acc]
+		logging.info("Train Accuracy: {}".format(" | ".join(train_part_accs)))
+		logging.info("Test Accuracy : {}".format(" | ".join(test_part_accs)))
+
+		save(
+			output[0],
+			features=train_feats,
+			labels=train_labs + args.label_shift)
+
+		save(
+			output[1],
+			features=test_feats,
+			labels=test_labs + args.label_shift)
+
+	elif args.subset == "train":
+		save(
+			output[0],
+			features=feats,
+			labels=data.labels + args.label_shift)
+
+	elif args.subset == "test":
+		save(
+			output[1],
+			features=feats,
+			labels=data.labels + args.label_shift)
+	else:
+		raise ValueError("Unknown subset: {}".format(args.subset))
+
+
+
+
+
 
 
 

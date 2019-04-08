@@ -33,6 +33,8 @@ def extract_args():
 		PoolingType.as_arg("pooling",
 			help_text="type of pre-classification pooling"),
 
+		Arg("--subset", choices=["train", "test"], default=None),
+
 		Arg("--n_jobs", "-j", type=int, default=0,
 			help="number of loading processes. If 0, then images are loaded in the same process"),
 
