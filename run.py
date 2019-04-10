@@ -20,6 +20,7 @@ from feature_extract.core.models import ModelWrapper
 from feature_extract.utils.arguments import extract_args
 
 from nabirds.annotations import AnnotationType
+from nabirds.utils import new_iterator
 
 def main(args):
 	if args.debug:
@@ -49,7 +50,8 @@ def main(args):
 	)
 	size = model.meta.input_size
 
-	prepare = PrepareType[args.prepare_type](model)
+	prepare = partial(PrepareType[args.prepare_type](model),
+			swap_channels=args.swap_channels)
 
 	logging.info("Created {} model with \"{}\" prepare function. Image input size: {}"\
 		.format(
@@ -92,7 +94,7 @@ def main(args):
 	logging.info("Loaded \"{}\"-parts dataset with {} samples from \"{}\"".format(
 		args.parts, n_samples, annot.root))
 
-	it, n_batches = data.new_iterator(
+	it, n_batches = new_iterator(data,
 		args.n_jobs, args.batch_size,
 		repeat=False, shuffle=False)
 

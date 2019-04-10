@@ -2,7 +2,7 @@ from abc import ABC
 import numpy as np
 import logging
 
-from chainer_addons.dataset import PreprocessMixin
+from chainer_addons.dataset import PreprocessMixin, AugmentationMixin
 
 from nabirds.dataset import AnnotationsReadMixin
 from nabirds.dataset import PartMixin
@@ -59,6 +59,8 @@ class _part_crop_mixin(ABC):
 		return crops, im_obj.label + self.label_shift
 
 class Dataset(
+	# 5. needed for center crop
+	AugmentationMixin,
 	# 4. applies preprocessing
 	PreprocessMixin,
 	# 3. transforms ImageWrapper objects to list of part crops
@@ -71,6 +73,7 @@ class Dataset(
 
 	def get_example(self, i):
 		ims, label = super(Dataset, self).get_example(i)
+		ims = np.array(ims)
 		return ims * 2 - 1 #, label
 
 from chainer.dataset import DatasetMixin
