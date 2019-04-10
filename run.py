@@ -75,8 +75,8 @@ def main(args):
 	)
 
 	assert isfile(weights), "Could not find weights \"{}\"".format(weights)
-	logging.info("Loading weights from \"{}\"".format(weights))
-
+	logging.info("Loading \"{}\" weights from \"{}\"".format(
+		model_info.class_key, weights))
 	wrapped_model = ModelWrapper(model,
 		weights=weights,
 		n_classes=part_info.n_classes + args.label_shift,
