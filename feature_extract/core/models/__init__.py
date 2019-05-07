@@ -34,12 +34,10 @@ class ModelWrapper(object):
 		else:
 			var = self.model.xp.array(X)
 			batch_feats = self.model(var, self.model.meta.feature_layer)
-			pred = self.model(var)
 			if isinstance(batch_feats, tuple):
 				batch_feats = batch_feats[0]
-			if isinstance(pred, tuple):
-				pred = pred[0]
 
+			pred = self.model.clf_layer(batch_feats)
 			batch_feats = to_cpu(batch_feats.array)
 			pred = to_cpu(pred.array)
 
