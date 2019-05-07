@@ -2,6 +2,6 @@ chainer~=4.2.0
 cupy-cuda92~=4.2.0
 numpy~=1.15
 
-nabirds~=0.3.3
+cvdatasets~=0.4.0
 cvargparse~=0.1.5
 chainer_addons~=0.5.0

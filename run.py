@@ -19,8 +19,8 @@ from feature_extract.core.dataset import Dataset
 from feature_extract.core.models import ModelWrapper
 from feature_extract.utils.arguments import extract_args
 
-from nabirds.annotations import AnnotationType
-from nabirds.utils import new_iterator
+from cvdatasets.annotations import AnnotationType
+from cvdatasets.utils import new_iterator
 
 def main(args):
 	if args.debug:

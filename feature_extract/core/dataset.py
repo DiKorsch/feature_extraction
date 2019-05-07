@@ -4,9 +4,9 @@ import logging
 
 from chainer_addons.dataset import PreprocessMixin, AugmentationMixin
 
-from nabirds.dataset import AnnotationsReadMixin
-from nabirds.dataset import PartMixin
-from nabirds.dataset import IteratorMixin
+from cvdatasets.dataset import AnnotationsReadMixin
+from cvdatasets.dataset import PartMixin
+from cvdatasets.dataset import IteratorMixin
 
 from feature_extract.utils.preprocessing import augmented_positions
 
