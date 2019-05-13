@@ -67,12 +67,16 @@ def main(args):
 	else:
 		weights_file = model_info.weights
 
-	weights = join(
-		data_info.BASE_DIR,
-		data_info.MODEL_DIR,
-		model_info.folder,
-		weights_file
-	)
+	# is absolute path
+	if weights_file.startswith("/"):
+		weights = weights_file
+	else:
+		weights = join(
+			data_info.BASE_DIR,
+			data_info.MODEL_DIR,
+			model_info.folder,
+			weights_file
+		)
 
 	assert isfile(weights), "Could not find weights \"{}\"".format(weights)
 	logging.info("Loading \"{}\" weights from \"{}\"".format(

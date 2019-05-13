@@ -2,21 +2,18 @@
 
 # resnet inception inception_tf
 export MODEL_TYPE=inception
-export N_JOBS=2
+export OMP_NUM_THREADS=4
+export N_JOBS=3
+export BATCH_SIZE=12
 
 export DATASET=CUB200
-export OUTPUT=../output/$DATASET
-export WEIGHTS=rmsprop.g_avg_pooling/model.inat.ckpt/model_final.npz
+export OUTPUT=/home/korsch/Data/DATASETS/birds/cub200/features
 
-PARTS=GLOBAL BATCH_SIZE=128 ./extract.sh
+export WEIGHTS=$(realpath ../models/ft_${DATASET}_inceptionV3.npz)
+# export WEIGHTS=/home/korsch1/korsch/models/inception/model.inat.ckpt.npz
 
-PARTS=NAC BATCH_SIZE=24 ./extract.sh
+PARAMS="--prepare_type model --input_size 427 --label_shift 1"
 
-PARTS=GT BATCH_SIZE=32 ./extract.sh
-
-PARTS=GT2 BATCH_SIZE=64 ./extract.sh
-
-PARTS=L1_pred BATCH_SIZE=64 ./extract.sh
-
-PARTS=L1_full BATCH_SIZE=64 ./extract.sh
+PARTS=L1_pred ./extract.sh $PARAMS
+PARTS=L1_full ./extract.sh $PARAMS
 
