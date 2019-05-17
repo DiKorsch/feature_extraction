@@ -7,7 +7,7 @@ N_JOBS=${N_JOBS:-2}
 
 # NAC GT GT2 L1_pred L1_full
 # PARTS=${PARTS:-GT}
-DATA=/home/korsch/Data/info.yml
+DATA=${DATA:-/home/korsch/Data/info.yml}
 
 if [[ -z $DATASET ]]; then
 	echo "DATASET variable is missing!"

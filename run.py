@@ -20,7 +20,7 @@ from feature_extract.core.models import ModelWrapper
 from feature_extract.utils.arguments import extract_args
 
 from cvdatasets.annotations import AnnotationType
-from cvdatasets.utils import new_iterator
+from cvdatasets.utils import new_iterator, feature_file_name
 
 def main(args):
 	if args.debug:
@@ -51,7 +51,9 @@ def main(args):
 	size = model.meta.input_size
 
 	prepare = partial(PrepareType[args.prepare_type](model),
-			swap_channels=args.swap_channels)
+		swap_channels=args.swap_channels,
+		keep_ratio=not args.no_center_crop_on_val,
+	)
 
 	logging.info("Created {} model with \"{}\" prepare function. Image input size: {}"\
 		.format(
@@ -93,6 +95,7 @@ def main(args):
 		preprocess=prepare,
 		size=size,
 		augment_positions=args.augment_positions,
+		center_crop_on_val=not args.no_center_crop_on_val,
 	)
 	n_samples = len(data)
 	logging.info("Loaded \"{}\"-parts dataset with {} samples from \"{}\"".format(
@@ -103,8 +106,10 @@ def main(args):
 		repeat=False, shuffle=False)
 
 	feats = np.zeros((n_samples, data.n_crops, model.meta.feature_size), dtype=np.float32)
-	output = [join(args.output, "{}{}.{}.npz".format(
-		subset, part_info.feature_suffix, model_info.folder)) for subset in ["train", "test"]]
+
+	_output = lambda subset: join(args.output, feature_file_name(subset, part_info, model_info))
+
+	output = [_output(subset) for subset in ["train", "test"]]
 	logging.info("Features ({}, {:.3f} GiB) will be saved to \"{}\" and \"{}\"".format(
 		feats.shape,
 		feats.nbytes / 1024**3,

@@ -43,6 +43,8 @@ def extract_args():
 		Arg("--swap_channels", action="store_true",
 			help="preprocessing option: swap channels from RGB to BGR"),
 
+		Arg("--no_center_crop_on_val", action="store_true"),
+
 		Arg("--augment_positions", action="store_true"),
 		Arg("--compress_output", action="store_true"),
 
