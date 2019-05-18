@@ -92,9 +92,12 @@ def main(args):
 		subset=args.subset,
 		dataset_cls=Dataset,
 
+		# for the annotation rescaling
+		center_cropped=not args.no_center_crop_on_val,
 		preprocess=prepare,
 		size=size,
 		augment_positions=args.augment_positions,
+		# for the augmentation mixin
 		center_crop_on_val=not args.no_center_crop_on_val,
 	)
 	n_samples = len(data)
