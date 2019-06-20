@@ -100,5 +100,7 @@ ENV/
 
 README.html
 
+models/
+models2/
 *.npz
 log

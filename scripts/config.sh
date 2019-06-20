@@ -12,9 +12,6 @@ FINAL_POOLING=${FINAL_POOLING:-g_avg}
 MODEL_TYPE=${MODEL_TYPE:-inception}
 PREPARE_TYPE=${PREPARE_TYPE:-model}
 
-WEIGHTS=${WEIGHTS:-"rmsprop.g_avg_pooling/model.inat.ckpt/model_final.npz"}
-
-
 OPTS=${OPTS:-""}
 OPTS="${OPTS} --gpu $GPU"
 OPTS="${OPTS} --batch_size $BATCH_SIZE"
