@@ -1,7 +1,9 @@
-source ${HOME}/.anaconda3/etc/profile.d/conda.sh
-conda activate chainer4
+if [[ ! -f /.dockerenv ]]; then
+	source ${HOME}/.anaconda3/etc/profile.d/conda.sh
+	conda activate chainer4
+fi
 
-PYTHON=python
+PYTHON=${PYTHON:-python}
 SCRIPT="../run.py"
 
 GPU=${GPU:-0}
