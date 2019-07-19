@@ -176,6 +176,6 @@ def main(args):
 
 
 
-
+chainer.global_config.cv_resize_backend = "PIL"
 with chainer.using_config("train", False), chainer.no_backprop_mode():
 	main(extract_args())
