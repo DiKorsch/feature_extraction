@@ -83,9 +83,10 @@ def main(args):
 	assert isfile(weights), "Could not find weights \"{}\"".format(weights)
 	logging.info("Loading \"{}\" weights from \"{}\"".format(
 		model_info.class_key, weights))
+	n_classes = part_info.n_classes + args.label_shift
 	wrapped_model = ModelWrapper(model,
 		weights=weights,
-		n_classes=part_info.n_classes + args.label_shift,
+		n_classes=n_classes,
 		device=GPU)
 
 	data = annot.new_dataset(
@@ -136,11 +137,20 @@ def main(args):
 		logging.info("Splitting features ...")
 		train_feats, test_feats = feats[annot.train_split], feats[annot.test_split]
 		train_labs, test_labs = annot.labels[annot.train_split], annot.labels[annot.test_split]
+
+		train_labs += args.label_shift
+		test_labs += args.label_shift
+
+		if train_labs.max() > n_classes:
+			_, train_labs = np.unique(train_labs, return_inverse=True)
+			_, test_labs = np.unique(test_labs, return_inverse=True)
+
+
 		train_preds = preds[annot.train_split]
 		test_preds = preds[annot.test_split]
 
-		train_acc = (train_preds == (train_labs+args.label_shift)[:, None]).mean(axis=0)
-		test_acc = (test_preds == (test_labs+args.label_shift)[:, None]).mean(axis=0)
+		train_acc = (train_preds == train_labs[:, None]).mean(axis=0)
+		test_acc = (test_preds == test_labs[:, None]).mean(axis=0)
 		train_part_accs = ["{:.3%}".format(acc) for acc in train_acc]
 		test_part_accs = ["{:.3%}".format(acc) for acc in test_acc]
 		logging.info("Train Accuracy: {}".format(" | ".join(train_part_accs)))
@@ -149,12 +159,12 @@ def main(args):
 		save(
 			output[0],
 			features=train_feats,
-			labels=train_labs + args.label_shift)
+			labels=train_labs)
 
 		save(
 			output[1],
 			features=test_feats,
-			labels=test_labs + args.label_shift)
+			labels=test_labs)
 
 	elif args.subset == "train":
 		save(
