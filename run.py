@@ -32,7 +32,7 @@ def main(args):
 		chainer.cuda.get_device(GPU).use()
 
 	annot_cls = AnnotationType.get(args.dataset).value
-	annot = annot_cls(args.data, args.parts)
+	annot = annot_cls(root_or_infofile=args.data, parts=args.parts)
 
 	data_info = annot.info
 	model_info = data_info.MODELS[args.model_type]
