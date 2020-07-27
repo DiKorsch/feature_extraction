@@ -19,7 +19,7 @@ from feature_extract.core.dataset import Dataset
 from feature_extract.core.models import ModelWrapper
 from feature_extract.utils.arguments import extract_args
 
-from cvdatasets.annotations import AnnotationType
+from cvdatasets import AnnotationType
 from cvdatasets.utils import new_iterator, feature_file_name
 
 def main(args):
@@ -32,7 +32,11 @@ def main(args):
 		chainer.cuda.get_device(GPU).use()
 
 	annot_cls = AnnotationType.get(args.dataset).value
-	annot = annot_cls(root_or_infofile=args.data, parts=args.parts)
+	annot = annot_cls(
+		root_or_infofile=args.data,
+		parts=getattr(args, "parts", None),
+		load_strict=getattr(args, "load_strict", False),
+		feature_model=getattr(args, "feature_model", False),)
 
 	data_info = annot.info
 	model_info = data_info.MODELS[args.model_type]

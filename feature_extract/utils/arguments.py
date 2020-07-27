@@ -1,9 +1,13 @@
-from cvargparse import ArgFactory, Arg, GPUParser
+from cvargparse import Arg
+from cvargparse import ArgFactory
+from cvargparse import GPUParser
 
-from chainer_addons.models import PrepareType
 from chainer_addons.links import PoolingType
+from chainer_addons.models import PrepareType
 
 from cvdatasets.utils import read_info_file
+from cvfinetune.parser import add_dataset_args
+from cvfinetune.parser import add_model_args
 
 import os
 DEFAULT_INFO_FILE=os.environ.get("DATA", "/home/korsch/Data/info.yml")
@@ -11,38 +15,20 @@ DEFAULT_INFO_FILE=os.environ.get("DATA", "/home/korsch/Data/info.yml")
 info_file = read_info_file(DEFAULT_INFO_FILE)
 
 def extract_args():
-	parser = GPUParser(ArgFactory([
-		Arg("data", default=DEFAULT_INFO_FILE),
-		Arg("dataset", choices=info_file.DATASETS.keys()),
-		Arg("parts", choices=info_file.PARTS.keys()),
+	parser = GPUParser()
 
+	add_dataset_args(parser)
+	add_model_args(parser)
+
+	parser.add_args(ArgFactory()\
+			.batch_size()\
+			.debug()\
+			.seed())
+
+	parser.add_args([
 		Arg("output", help="output folder for the extracted features"),
 
-		Arg("--model_type", "-mt",
-			default="resnet", choices=info_file.MODELS.keys(),
-			help="type of the model"),
-
-		Arg("--input_size", type=int, default=0,
-			help="overrides default input size of the model, if greater than 0"),
-
-		PrepareType.as_arg("prepare_type",
-			help_text="type of image preprocessing"),
-
-		Arg("--weights", type=str,
-			help="network weights used for feature extraction"),
-
-		PoolingType.as_arg("pooling",
-			help_text="type of pre-classification pooling"),
-
 		Arg("--subset", choices=["train", "test"], default=None),
-
-		Arg("--n_jobs", "-j", type=int, default=0,
-			help="number of loading processes. If 0, then images are loaded in the same process"),
-
-		Arg("--label_shift", type=int, default=1),
-
-		Arg("--swap_channels", action="store_true",
-			help="preprocessing option: swap channels from RGB to BGR"),
 
 		Arg("--no_center_crop_on_val", action="store_true"),
 
@@ -52,12 +38,6 @@ def extract_args():
 		Arg("--is_bbox_parts", action="store_true"),
 
 
-	])\
-	.batch_size()\
-	.debug()\
-	.seed()\
-	)
-
-	parser.init_logger()
+	], group_name="Extraction options")
 
 	return parser.parse_args()

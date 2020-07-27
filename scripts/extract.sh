@@ -41,7 +41,7 @@ source config.sh
 $PYTHON $SCRIPT \
 	${DATA} \
 	${DATASET} \
-	${DATASET}_${PARTS} \
+	${PARTS} \
 	${OUTPUT} \
 	${OPTS} \
 	$@
