@@ -31,16 +31,11 @@ def main(args):
 	if GPU >= 0:
 		chainer.cuda.get_device(GPU).use()
 
-	annot_cls = AnnotationType.get(args.dataset).value
-	annot = annot_cls(
-		root_or_infofile=args.data,
-		parts=getattr(args, "parts", None),
-		load_strict=getattr(args, "load_strict", False),
-		feature_model=getattr(args, "feature_model", False),)
+	annot = AnnotationType.new_annotation(args, load_strict=False)
 
 	data_info = annot.info
 	model_info = data_info.MODELS[args.model_type]
-	part_info = data_info.PARTS[args.parts]
+	ds_info = annot.dataset_info
 
 	if model_info.class_key == "inception_tf":
 		import pdb; pdb.set_trace()
@@ -87,7 +82,7 @@ def main(args):
 	assert isfile(weights), "Could not find weights \"{}\"".format(weights)
 	logging.info("Loading \"{}\" weights from \"{}\"".format(
 		model_info.class_key, weights))
-	n_classes = part_info.n_classes + args.label_shift
+	n_classes = ds_info.n_classes + args.label_shift
 	wrapped_model = ModelWrapper(model,
 		weights=weights,
 		n_classes=n_classes,
@@ -115,7 +110,7 @@ def main(args):
 
 	feats = np.zeros((n_samples, data.n_crops, model.meta.feature_size), dtype=np.float32)
 
-	_output = lambda subset: join(args.output, feature_file_name(subset, part_info, model_info))
+	_output = lambda subset: join(args.output, feature_file_name(subset, ds_info, model_info))
 
 	output = [_output(subset) for subset in ["train", "test"]]
 	logging.info("Features ({}, {:.3f} GiB) will be saved to \"{}\" and \"{}\"".format(

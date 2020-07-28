@@ -9,11 +9,6 @@ from cvdatasets.utils import read_info_file
 from cvfinetune.parser import add_dataset_args
 from cvfinetune.parser import add_model_args
 
-import os
-DEFAULT_INFO_FILE=os.environ.get("DATA", "/home/korsch/Data/info.yml")
-
-info_file = read_info_file(DEFAULT_INFO_FILE)
-
 def extract_args():
 	parser = GPUParser()
 
