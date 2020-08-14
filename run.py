@@ -121,12 +121,20 @@ def main(args):
 
 	preds = np.zeros((n_samples, data.n_crops), dtype=np.int32)
 
-	for batch_i, batch in tqdm(enumerate(it), total=n_batches):
+	bar = tqdm(enumerate(it), total=n_batches, desc="Extracting features")
+
+	labs = np.expand_dims(data.labels, axis=1).repeat(data.n_crops, axis=1)
+
+	for batch_i, batch in bar:
 		batch_feats, pred = wrapped_model(batch)
 		i = batch_i * it.batch_size
 		n = batch_feats.shape[0]
 		feats[i : i + n] = batch_feats
 		preds[i : i + n] = pred
+
+		curr_accu = (preds[:i+n] == labs[:i+n]).mean()
+		bar.set_description(f"Extracting features (Accuracy: {curr_accu:.2%})")
+
 
 	logging.info("Saving features ({}compressed) according to the given split".format(
 		"" if args.compress_output else "un"))
@@ -137,8 +145,8 @@ def main(args):
 		train_feats, test_feats = feats[annot.train_split], feats[annot.test_split]
 		train_labs, test_labs = annot.labels[annot.train_split], annot.labels[annot.test_split]
 
-		train_labs += args.label_shift
-		test_labs += args.label_shift
+		# train_labs += args.label_shift
+		# test_labs += args.label_shift
 
 		if train_labs.max() > n_classes:
 			_, train_labs = np.unique(train_labs, return_inverse=True)
@@ -169,13 +177,15 @@ def main(args):
 		save(
 			output[0],
 			features=feats,
-			labels=data.labels + args.label_shift)
+			labels=data.labels #+ args.label_shift
+		)
 
 	elif args.subset == "test":
 		save(
 			output[1],
 			features=feats,
-			labels=data.labels + args.label_shift)
+			labels=data.labels #+ args.label_shift
+		)
 	else:
 		raise ValueError("Unknown subset: {}".format(args.subset))
 
@@ -185,6 +195,6 @@ def main(args):
 
 
 
-chainer.global_config.cv_resize_backend = "PIL"
+chainer.global_config.cv_resize_backend = "cv2"
 with chainer.using_config("train", False), chainer.no_backprop_mode():
 	main(extract_args())
