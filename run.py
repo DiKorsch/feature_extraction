@@ -2,25 +2,28 @@
 if __name__ != '__main__': raise Exception("Do not import me!")
 
 import logging
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 import chainer
 
-from os.path import join, isfile
 from functools import partial
+from os.path import isfile
+from os.path import join
 from tqdm import tqdm
 
+from chainer_addons.links.pooling import PoolingType
 from chainer_addons.models import ModelType
 from chainer_addons.models import PrepareType
-from chainer_addons.links.pooling import PoolingType
 
 from feature_extract.core.dataset import Dataset
 from feature_extract.core.models import ModelWrapper
 from feature_extract.utils.arguments import extract_args
 
 from cvdatasets import AnnotationType
-from cvdatasets.utils import new_iterator, feature_file_name
+from cvdatasets.dataset.image import Size
+from cvdatasets.utils import feature_file_name
+from cvdatasets.utils import new_iterator
 
 def main(args):
 	if args.debug:
@@ -41,13 +44,16 @@ def main(args):
 		import pdb; pdb.set_trace()
 		raise ValueError("FIX ME!")
 
+	assert args.input_size != 0, "input size is set to 0!"
 	model = ModelType.new(
 		model_type=model_info.class_key,
-		input_size=args.input_size,
+		input_size=Size(args.input_size),
 		pooling=args.pooling,
 		aux_logits=False
 	)
+
 	size = model.meta.input_size
+
 
 	prepare = partial(PrepareType[args.prepare_type](model),
 		swap_channels=args.swap_channels,
@@ -92,14 +98,15 @@ def main(args):
 		subset=args.subset,
 		dataset_cls=Dataset,
 
-		# for the annotation rescaling
 		center_cropped=not args.no_center_crop_on_val,
-		preprocess=prepare,
 		size=size,
 		augment_positions=args.augment_positions,
-		# for the augmentation mixin
-		center_crop_on_val=not args.no_center_crop_on_val,
+		prepare=prepare,
 	)
+
+	with data.enable_img_profiler():
+		data[np.random.randint(len(data))]
+
 	n_samples = len(data)
 	logging.info("Loaded \"{}\"-parts dataset with {} samples from \"{}\"".format(
 		args.parts, n_samples, annot.root))

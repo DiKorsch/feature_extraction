@@ -1,6 +1,6 @@
 if [[ ! -f /.dockerenv ]]; then
 	source ${HOME}/.miniconda3/etc/profile.d/conda.sh
-	conda activate ${CONDA_ENV:-chainer6}
+	conda activate ${CONDA_ENV:-chainer7cu11}
 fi
 
 PYTHON=${PYTHON:-python}
@@ -12,6 +12,7 @@ N_JOBS=${N_JOBS:-0}
 FINAL_POOLING=${FINAL_POOLING:-g_avg}
 
 MODEL_TYPE=${MODEL_TYPE:-inception}
+INPUT_SIZE=${INPUT_SIZE:-427}
 PREPARE_TYPE=${PREPARE_TYPE:-model}
 
 OPTS=${OPTS:-""}
@@ -22,6 +23,7 @@ OPTS="${OPTS} --pooling ${FINAL_POOLING}"
 # OPTS="${OPTS} --augment_positions"
 
 OPTS="${OPTS} --model_type $MODEL_TYPE"
+OPTS="${OPTS} --input_size $INPUT_SIZE"
 OPTS="${OPTS} --prepare_type $PREPARE_TYPE"
 OPTS="${OPTS} --weights $WEIGHTS"
 
